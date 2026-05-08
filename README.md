@@ -6,6 +6,24 @@ It can save simple bookmarks, embed bookmark-only YouTube links, enrich website 
 
 Built by Ketah with assistance from OpenAI Codex.
 
+## Screenshots
+
+### Public feed
+
+![Bookmarks public feed](docs/public_page.png)
+
+![Bookmarks media feed](docs/public_page2.png)
+
+### Browser extension
+
+![Bookmarks browser extension](docs/extension.png)
+
+### Administration
+
+![Bookmarks admin page](docs/admin.png)
+
+![Bookmarks app stats](docs/admin_status.png)
+
 ## Features
 
 - Single-user web UI with username/password login.

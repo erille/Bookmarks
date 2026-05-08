@@ -1,0 +1,79 @@
+{% for bookmark in bookmarks %}
+{% set media_url = media_url_for(bookmark) %}
+{% set thumbnail_url = thumbnail_url_for(bookmark) %}
+{% set youtube_embed_url = youtube_embed_url_for(bookmark) %}
+{% set detail_path = bookmark_path_for(bookmark, public_feed|default(false)) %}
+{% set share_url = share_url_for(request, bookmark, public_feed|default(false)) %}
+{% set category_base = '/' if public_feed|default(false) else '/bookmarks' %}
+<article class="bookmark" id="bookmark-{{ bookmark.id }}" data-source-url="{{ bookmark.source_url }}">
+  {% if media_url and bookmark.media_type == "video" %}
+  <video class="feed-media" controls muted playsinline preload="metadata" data-autoplay="true" {% if thumbnail_url %}poster="{{ thumbnail_url }}"{% endif %}>
+    <source src="{{ media_url }}">
+  </video>
+  {% elif media_url and bookmark.media_type == "image" %}
+  <img class="feed-media" src="{{ media_url }}" alt="{{ bookmark.title }}" loading="lazy">
+  {% elif youtube_embed_url %}
+  <div class="youtube-embed">
+    <iframe
+      src="{{ youtube_embed_url }}"
+      title="{{ bookmark.title }}"
+      loading="lazy"
+      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+      referrerpolicy="strict-origin-when-cross-origin"
+      allowfullscreen
+    ></iframe>
+  </div>
+  {% elif thumbnail_url %}
+  <img class="feed-media {% if bookmark.media_type == 'website' %}website-preview{% endif %}" src="{{ thumbnail_url }}" alt="{{ bookmark.title }}" loading="lazy">
+  {% endif %}
+  <div class="bookmark-main">
+    <div class="bookmark-title-row">
+      <h2><a href="{{ detail_path }}">{{ bookmark.title }}</a></h2>
+      <div class="card-actions">
+        <button type="button" class="source-action share-button" data-share-url="{{ share_url }}">Share</button>
+        {% if username and media_url and bookmark.media_type == "video" %}
+        <a class="source-action" href="{{ media_url }}" download>Download</a>
+        {% endif %}
+        {% if username and not public_feed|default(false) and has_category_slug(bookmark, "to-watch") %}
+        <form method="post" action="/bookmarks/{{ bookmark.id }}/watched" class="card-action-form">
+          <input type="hidden" name="return_to" value="{{ watched_return_to|default('/bookmarks?category=to-watch') }}">
+          <button type="submit" class="source-action watched-action">Watched</button>
+        </form>
+        {% endif %}
+        <a class="source-action" href="{{ bookmark.source_url }}" rel="noreferrer" target="_blank">Open source</a>
+        {% if username and not public_feed|default(false) %}
+        <a class="source-action" href="/bookmarks/{{ bookmark.id }}/edit">Edit</a>
+        {% endif %}
+      </div>
+    </div>
+    <a class="source-url" href="{{ bookmark.source_url }}" rel="noreferrer" target="_blank">{{ bookmark.source_url }}</a>
+    {% if bookmark.notes %}
+    <p class="bookmark-notes">{{ bookmark.notes }}</p>
+    {% endif %}
+    <div class="info-chips">
+      <span class="info-chip"><b>Status</b>{{ bookmark.status }}</span>
+      {% if username and not public_feed|default(false) %}
+      <span class="info-chip"><b>Visibility</b>{{ bookmark.visibility }}</span>
+      {% endif %}
+      <span class="info-chip"><b>Source</b>{{ source_platform_for(bookmark) }}</span>
+      {% if bookmark.uploader %}<span class="info-chip"><b>By</b>{{ bookmark.uploader }}</span>{% endif %}
+      {% if bookmark.duration %}<span class="info-chip"><b>Length</b>{{ bookmark.duration }}s</span>{% endif %}
+      <span class="info-chip"><b>Date</b>{{ bookmark.created_at.strftime("%d.%m.%Y") }}</span>
+      {% for item in bookmark.categories %}
+      <a class="info-chip category-chip" href="{{ category_base }}?category={{ item.slug }}{% if active_tag|default('') %}&amp;tag={{ active_tag|urlencode }}{% endif %}"><b>Category</b>{{ item.name }}</a>
+      {% endfor %}
+      {% for item in bookmark.tags %}
+      <a class="info-chip tag-chip" href="{{ category_base }}?{% if active_category|default('') %}category={{ active_category|urlencode }}&amp;{% endif %}tag={{ item.slug }}"><b>Tag</b>{{ item.name }}</a>
+      {% endfor %}
+    </div>
+    {% if bookmark.error_message %}
+    <p class="inline-error">{{ bookmark.error_message }}</p>
+    {% if username %}
+    <form method="post" action="/bookmarks/{{ bookmark.id }}/retry" class="inline-action-form">
+      <button type="submit" class="secondary-button">Retry download</button>
+    </form>
+    {% endif %}
+    {% endif %}
+  </div>
+</article>
+{% endfor %}

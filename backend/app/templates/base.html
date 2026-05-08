@@ -1,0 +1,51 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>{{ title or "Bookmarks" }}</title>
+    <link rel="icon" href="{{ url_for('static', path='/favicon.ico') }}" sizes="any">
+    <link rel="icon" type="image/svg+xml" href="{{ url_for('static', path='/favicon.svg') }}">
+    <link rel="icon" type="image/png" sizes="96x96" href="{{ url_for('static', path='/favicon-96x96.png') }}">
+    <link rel="apple-touch-icon" href="{{ url_for('static', path='/apple-touch-icon.png') }}">
+    <link rel="manifest" href="{{ url_for('static', path='/site.webmanifest') }}">
+    <meta name="theme-color" content="#ffffff">
+    <link rel="stylesheet" href="{{ url_for('static', path='/styles.css') }}?v={{ asset_version() }}">
+  </head>
+  <body>
+    <header class="topbar">
+      <div class="topbar-left">
+        <a class="brand" href="/">
+          <img class="brand-icon" src="{{ url_for('static', path='/favicon-96x96.png') }}" alt="" aria-hidden="true">
+          Bookmarks
+        </a>
+        <nav class="topnav" aria-label="Main navigation">
+          {% if username %}
+          <a href="/">Public</a>
+          <a href="/bookmarks">Feed</a>
+          <a href="/bookmarks?category=to-watch">To Watch</a>
+          <a href="/admin">Admin</a>
+          <a href="/admin/labels">Labels</a>
+          <a href="/admin/status">Status</a>
+          {% endif %}
+        </nav>
+      </div>
+      <div class="topbar-actions">
+        {% if show_add_button %}
+        <button type="button" class="icon-button" data-toggle-save-panel aria-controls="savePanel" aria-expanded="false" aria-label="Add bookmark" title="Add bookmark"></button>
+        {% endif %}
+        {% if username %}
+        <form method="post" action="/logout">
+          <button type="submit" class="secondary-button">Logout</button>
+        </form>
+        {% else %}
+        <a class="button-link secondary-link" href="/login">Login</a>
+        {% endif %}
+      </div>
+    </header>
+    <main class="page">
+      {% block content %}{% endblock %}
+    </main>
+    {% block scripts %}{% endblock %}
+  </body>
+</html>

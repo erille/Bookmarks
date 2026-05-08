@@ -1,0 +1,49 @@
+{% extends "base.html" %}
+{% set title = "Edit bookmark - Bookmarks" %}
+{% block content %}
+<section class="edit-panel">
+  <div class="panel-heading">
+    <h1>Edit bookmark</h1>
+    <a class="button-link secondary-link" href="/bookmarks/{{ bookmark.id }}">Cancel</a>
+  </div>
+  {% if form_error %}
+  <p class="notice error">{{ form_error }}</p>
+  {% endif %}
+  <form method="post" action="/bookmarks/{{ bookmark.id }}/edit" class="edit-form">
+    <label class="field-full">
+      Title
+      <input type="text" name="title" value="{{ bookmark.title }}" required>
+    </label>
+    <label class="field-full">
+      Notes
+      <textarea name="notes" rows="4">{{ bookmark.notes or "" }}</textarea>
+    </label>
+    <label>
+      Visibility
+      <select name="visibility">
+        <option value="public" {% if bookmark.visibility == "public" %}selected{% endif %}>Public</option>
+        <option value="private" {% if bookmark.visibility == "private" %}selected{% endif %}>Private</option>
+      </select>
+    </label>
+    <label>
+      Existing categories
+      <select name="categories" multiple size="8">
+        {% for item in categories %}
+        <option value="{{ item.name }}" {% if item.id in selected_category_ids %}selected{% endif %}>{{ item.name }}</option>
+        {% endfor %}
+      </select>
+    </label>
+    <label class="field-full">
+      New categories
+      <input type="text" name="new_categories" placeholder="music, funny">
+    </label>
+    <label class="field-full">
+      Tags
+      <input type="text" name="tags" value="{{ bookmark.tags | map(attribute='name') | join(', ') }}" placeholder="guitar, live, tutorial">
+    </label>
+    <div class="form-actions field-full">
+      <button type="submit">Save changes</button>
+    </div>
+  </form>
+</section>
+{% endblock %}

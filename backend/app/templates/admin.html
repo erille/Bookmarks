@@ -1,0 +1,131 @@
+{% extends "base.html" %}
+{% set title = "Admin - Bookmarks" %}
+{% block content %}
+{% if flash %}
+<p class="notice success">{{ flash }}</p>
+{% endif %}
+
+<section class="admin-page">
+  <div class="panel-heading page-heading">
+    <h1>Administration</h1>
+  </div>
+
+  <section class="admin-panel">
+    <section class="maintenance-panel">
+      <div>
+        <h2>Extension</h2>
+      </div>
+      <div class="maintenance-actions">
+        <a class="button-link" href="/admin/extension.zip">Download extension</a>
+      </div>
+    </section>
+
+    <section class="maintenance-panel">
+      <div>
+        <h2>JSON backup</h2>
+      </div>
+      <div class="maintenance-actions">
+        <a class="button-link" href="/admin/export">Export JSON</a>
+        <form method="post" action="/admin/import" enctype="multipart/form-data" class="import-form">
+          <label>
+            Import JSON
+            <input type="file" name="import_file" accept="application/json,.json" required>
+          </label>
+          <label class="checkbox-row">
+            <input type="checkbox" name="overwrite_existing" value="true">
+            Update existing duplicates
+          </label>
+          <button type="submit" class="secondary-button">Import</button>
+        </form>
+      </div>
+    </section>
+
+    <form method="post" action="/admin/bookmarks/bulk" class="admin-bulk-form">
+      <div class="bulk-actions">
+        <label>
+          Action
+          <select name="action">
+            <option value="set_visibility">Set visibility</option>
+            <option value="add_category">Add category</option>
+            <option value="remove_category">Remove category</option>
+            <option value="add_tag">Add tag</option>
+            <option value="remove_tag">Remove tag</option>
+            <option value="retry_failed">Retry failed downloads</option>
+            <option value="delete">Delete</option>
+          </select>
+        </label>
+        <label>
+          Visibility
+          <select name="visibility">
+            <option value="public">Public</option>
+            <option value="private">Private</option>
+          </select>
+        </label>
+        <label>
+          Category
+          <input list="categoryOptions" type="text" name="category_name" placeholder="category name">
+        </label>
+        <label>
+          Tag
+          <input list="tagOptions" type="text" name="tag_name" placeholder="tag name">
+        </label>
+        <button type="submit">Apply</button>
+      </div>
+
+      <datalist id="categoryOptions">
+        {% for category in categories %}
+        <option value="{{ category.name }}"></option>
+        {% endfor %}
+      </datalist>
+      <datalist id="tagOptions">
+        {% for tag in tags %}
+        <option value="{{ tag.name }}"></option>
+        {% endfor %}
+      </datalist>
+
+      <div class="admin-table-wrap">
+        <table class="admin-table">
+          <thead>
+            <tr>
+              <th><input type="checkbox" data-select-all aria-label="Select all bookmarks"></th>
+              <th>Bookmark</th>
+              <th>Status</th>
+              <th>Visibility</th>
+              <th>Categories</th>
+              <th>Tags</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for bookmark in bookmarks %}
+            <tr>
+              <td><input type="checkbox" name="bookmark_ids" value="{{ bookmark.id }}" aria-label="Select {{ bookmark.title }}"></td>
+              <td>
+                <a href="/bookmarks/{{ bookmark.id }}">{{ bookmark.title }}</a>
+                <span class="table-subtext">{{ source_platform_for(bookmark) }}</span>
+              </td>
+              <td>{{ bookmark.status }}</td>
+              <td>{{ bookmark.visibility }}</td>
+              <td>
+                {% for category in bookmark.categories %}
+                <span class="table-chip">{{ category.name }}</span>
+                {% endfor %}
+              </td>
+              <td>
+                {% for tag in bookmark.tags %}
+                <span class="table-chip tag-table-chip">{{ tag.name }}</span>
+                {% endfor %}
+              </td>
+              <td><a href="/bookmarks/{{ bookmark.id }}/edit">Edit</a></td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </form>
+  </section>
+</section>
+{% endblock %}
+{% block scripts %}
+<script src="{{ url_for('static', path='/feed.js') }}?v={{ asset_version() }}" defer></script>
+{% endblock %}

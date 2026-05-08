@@ -1,0 +1,134 @@
+{% extends "base.html" %}
+{% set title = bookmark.title ~ " - Bookmarks" %}
+{% block content %}
+{% if flash %}
+<p class="notice success">{{ flash }}</p>
+{% endif %}
+{% set thumbnail_url = thumbnail_url_for(bookmark) %}
+{% set youtube_embed_url = youtube_embed_url_for(bookmark) %}
+{% set public_detail = public_detail|default(false) %}
+{% set category_base = '/' if public_detail else '/bookmarks' %}
+{% set share_url = share_url_for(request, bookmark, public_detail) %}
+
+<section class="detail-layout">
+  <article class="detail-main">
+    {% if media_url and bookmark.media_type == "video" %}
+    <video class="media-player" controls preload="metadata" {% if thumbnail_url %}poster="{{ thumbnail_url }}"{% endif %}>
+      <source src="{{ media_url }}">
+    </video>
+    {% elif media_url and bookmark.media_type == "image" %}
+    <img class="media-image" src="{{ media_url }}" alt="{{ bookmark.title }}">
+    {% elif youtube_embed_url %}
+    <div class="youtube-embed">
+      <iframe
+        src="{{ youtube_embed_url }}"
+        title="{{ bookmark.title }}"
+        loading="lazy"
+        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+        referrerpolicy="strict-origin-when-cross-origin"
+        allowfullscreen
+      ></iframe>
+    </div>
+    {% elif thumbnail_url %}
+    <img class="media-image {% if bookmark.media_type == 'website' %}website-preview{% endif %}" src="{{ thumbnail_url }}" alt="{{ bookmark.title }}">
+    {% endif %}
+
+    <h1>{{ bookmark.title }}</h1>
+    <a href="{{ bookmark.source_url }}" target="_blank" rel="noreferrer">{{ bookmark.source_url }}</a>
+    {% if bookmark.notes %}
+    <p class="detail-notes">{{ bookmark.notes }}</p>
+    {% endif %}
+
+    {% if bookmark.error_message %}
+    <p class="notice error">{{ bookmark.error_message }}</p>
+    {% endif %}
+
+  </article>
+
+  <aside class="detail-sidebar">
+    <div class="detail-actions">
+      <button type="button" class="secondary-button share-button" data-share-url="{{ share_url }}">Share</button>
+      <a class="button-link" href="{{ bookmark.source_url }}" target="_blank" rel="noreferrer">Open source</a>
+      {% if username and not public_detail and has_category_slug(bookmark, "to-watch") %}
+      <form method="post" action="/bookmarks/{{ bookmark.id }}/watched">
+        <input type="hidden" name="return_to" value="/bookmarks?category=to-watch">
+        <button type="submit" class="secondary-button">Watched</button>
+      </form>
+      {% endif %}
+      <a class="button-link" href="{{ '/' if public_detail else '/bookmarks' }}">Back</a>
+      {% if username and not public_detail %}
+      <a class="button-link secondary-link" href="/bookmarks/{{ bookmark.id }}/edit">Edit</a>
+      {% endif %}
+      {% if username and bookmark.status == "failed" and not public_detail %}
+      <form method="post" action="/bookmarks/{{ bookmark.id }}/retry">
+        <button type="submit" class="secondary-button">Retry download</button>
+      </form>
+      {% endif %}
+      {% if username and not public_detail %}
+      <form method="post" action="/bookmarks/{{ bookmark.id }}/delete">
+        <button type="submit" class="danger-button">Delete</button>
+      </form>
+      {% endif %}
+    </div>
+
+    <section class="detail-info" aria-labelledby="bookmarkDetailsTitle">
+      <h2 id="bookmarkDetailsTitle">Details</h2>
+      <dl class="detail-data">
+        <div>
+          <dt>Status</dt>
+          <dd>{{ bookmark.status }}</dd>
+        </div>
+        {% if username and not public_detail %}
+        <div>
+          <dt>Visibility</dt>
+          <dd>{{ bookmark.visibility }}</dd>
+        </div>
+        {% endif %}
+        <div>
+          <dt>Source</dt>
+          <dd>{{ source_platform_for(bookmark) }}</dd>
+        </div>
+        {% if bookmark.uploader %}
+        <div>
+          <dt>By</dt>
+          <dd>{{ bookmark.uploader }}</dd>
+        </div>
+        {% endif %}
+        {% if bookmark.duration %}
+        <div>
+          <dt>Length</dt>
+          <dd>{{ bookmark.duration }}s</dd>
+        </div>
+        {% endif %}
+        <div>
+          <dt>Date</dt>
+          <dd>{{ bookmark.created_at.strftime("%d.%m.%Y") }}</dd>
+        </div>
+        <div>
+          <dt>Categories</dt>
+          <dd class="detail-chip-list">
+            {% for item in bookmark.categories %}
+            <a class="detail-chip category-chip" href="{{ category_base }}?category={{ item.slug }}">{{ item.name }}</a>
+            {% else %}
+            <span class="detail-muted">None</span>
+            {% endfor %}
+          </dd>
+        </div>
+        <div>
+          <dt>Tags</dt>
+          <dd class="detail-chip-list">
+            {% for item in bookmark.tags %}
+            <a class="detail-chip tag-chip" href="{{ category_base }}?tag={{ item.slug }}">{{ item.name }}</a>
+            {% else %}
+            <span class="detail-muted">None</span>
+            {% endfor %}
+          </dd>
+        </div>
+      </dl>
+    </section>
+  </aside>
+</section>
+{% endblock %}
+{% block scripts %}
+<script src="{{ url_for('static', path='/feed.js') }}?v={{ asset_version() }}" defer></script>
+{% endblock %}

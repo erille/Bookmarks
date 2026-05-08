@@ -1,0 +1,41 @@
+{% extends "base.html" %}
+{% set title = "Bookmarks" %}
+{% block content %}
+<section class="toolbar">
+  <form method="get" action="/" class="filters">
+    <input id="searchInput" type="search" name="q" value="{{ q }}" placeholder="Search public bookmarks">
+    {% if active_tag %}<input type="hidden" name="tag" value="{{ active_tag }}">{% endif %}
+    <select name="category">
+      <option value="">All categories</option>
+      {% for item in categories %}
+      <option value="{{ item.slug }}" {% if active_category == item.slug or active_category == item.name %}selected{% endif %}>{{ item.name }}</option>
+      {% endfor %}
+    </select>
+    <button type="submit">Filter</button>
+  </form>
+</section>
+
+<section
+  id="feed"
+  class="feed"
+  data-feed-url="/public/feed"
+  data-offset="{{ bookmarks|length }}"
+  data-limit="{{ feed_limit }}"
+  data-q="{{ q }}"
+  data-category="{{ active_category }}"
+  data-tag="{{ active_tag }}"
+>
+  {% include "_bookmark_cards.html" %}
+  {% if not bookmarks %}
+  <p class="empty">No public bookmarks yet.</p>
+  {% endif %}
+</section>
+{% if has_more %}
+<div class="load-more-row">
+  <button type="button" id="loadMoreButton" class="secondary-button">Load more</button>
+</div>
+{% endif %}
+{% endblock %}
+{% block scripts %}
+<script src="{{ url_for('static', path='/feed.js') }}?v={{ asset_version() }}" defer></script>
+{% endblock %}

@@ -1,0 +1,179 @@
+{% extends "base.html" %}
+{% set title = "App Stats - Bookmarks" %}
+{% block content %}
+<section class="status-page">
+  <div class="panel-heading page-heading">
+    <h1>App Stats</h1>
+  </div>
+
+  <section class="stat-grid">
+    <article class="stat-card">
+      <span>Bookmarks</span>
+      <strong>{{ stats.bookmark_total }}</strong>
+    </article>
+    <article class="stat-card">
+      <span>Public</span>
+      <strong>{{ stats.public_count }}</strong>
+    </article>
+    <article class="stat-card">
+      <span>Private</span>
+      <strong>{{ stats.private_count }}</strong>
+    </article>
+    <article class="stat-card">
+      <span>Categories</span>
+      <strong>{{ stats.category_total }}</strong>
+    </article>
+    <article class="stat-card">
+      <span>Tags</span>
+      <strong>{{ stats.tag_total }}</strong>
+    </article>
+    <article class="stat-card">
+      <span>Storage</span>
+      <strong>{{ stats.storage_total_label }}</strong>
+    </article>
+    <article class="stat-card">
+      <span>ReClip</span>
+      <strong class="{{ 'status-good' if stats.reclip.ok else 'status-bad' }}">{{ stats.reclip.status }}</strong>
+    </article>
+  </section>
+
+  <section class="status-grid">
+    <article class="chart-card visibility-card">
+      <h2>Visibility</h2>
+      <div class="donut-wrap">
+        <div class="donut-chart" style="--public: {{ stats.public_percent }}%;"></div>
+        <div class="donut-center">
+          <strong>{{ stats.public_percent }}%</strong>
+          <span>Public</span>
+        </div>
+      </div>
+      <div class="chart-legend">
+        <span><i class="legend-blue"></i> Public {{ stats.public_count }}</span>
+        <span><i class="legend-light-blue"></i> Private {{ stats.private_count }}</span>
+      </div>
+    </article>
+
+    <article class="chart-card storage-card">
+      <h2>Storage</h2>
+      <div class="storage-total">{{ stats.storage_total_label }}</div>
+      <div class="storage-bar" aria-label="Storage usage by type">
+        {% for item in stats.storage_items %}
+        <span
+          class="storage-segment"
+          title="{{ item.label }} {{ item.bytes_label }}"
+          style="width: {{ item.percent }}%; background: {{ item.color }};"
+        ></span>
+        {% endfor %}
+      </div>
+      <div class="storage-list">
+        {% for item in stats.storage_items %}
+        <div class="storage-row">
+          <span><i style="background: {{ item.color }};"></i>{{ item.label }}</span>
+          <strong>{{ item.bytes_label }}</strong>
+          <em>{{ item.files }} file{{ "" if item.files == 1 else "s" }}</em>
+        </div>
+        {% endfor %}
+      </div>
+    </article>
+  </section>
+
+  <section class="status-grid">
+    <article class="chart-card">
+      <h2>Download Status</h2>
+      <div class="status-bars">
+        {% for item in stats.status_items %}
+        <div class="status-bar-row">
+          <span>{{ item.label }}</span>
+          <div class="mini-bar"><i style="width: {{ item.percent }}%;"></i></div>
+          <strong>{{ item.count }}</strong>
+        </div>
+        {% endfor %}
+      </div>
+    </article>
+
+    <article class="chart-card">
+      <h2>System</h2>
+      <dl class="system-list">
+        <div>
+          <dt>App</dt>
+          <dd>{{ stats.app_name }} / {{ stats.app_env }}</dd>
+        </div>
+        <div>
+          <dt>Base URL</dt>
+          <dd>{{ stats.app_base_url }}</dd>
+        </div>
+        <div>
+          <dt>ReClip</dt>
+          <dd>{{ stats.reclip_base_url }} / {{ stats.reclip.detail }}</dd>
+        </div>
+        {% if stats.disk_usage %}
+        <div>
+          <dt>Disk</dt>
+          <dd>{{ stats.disk_usage.used_label }} used / {{ stats.disk_usage.total_label }}</dd>
+        </div>
+        {% endif %}
+        <div>
+          <dt>Database</dt>
+          <dd>{{ stats.database_path }}</dd>
+        </div>
+        <div>
+          <dt>Generated</dt>
+          <dd>{{ stats.generated_at.strftime("%Y-%m-%d %H:%M:%S UTC") }}</dd>
+        </div>
+      </dl>
+    </article>
+  </section>
+
+  <section class="status-grid">
+    <article class="chart-card">
+      <h2>Media Types</h2>
+      <div class="status-bars">
+        {% for item in stats.media_type_items %}
+        <div class="status-bar-row">
+          <span>{{ item.label }}</span>
+          <div class="mini-bar"><i style="width: {{ item.percent }}%;"></i></div>
+          <strong>{{ item.count }}</strong>
+        </div>
+        {% endfor %}
+      </div>
+    </article>
+
+    <article class="chart-card">
+      <h2>Recent</h2>
+      <dl class="system-list">
+        <div>
+          <dt>Latest bookmark</dt>
+          <dd>
+            {% if stats.latest_bookmark %}
+            {{ stats.latest_bookmark.title }} / {{ stats.latest_bookmark.created_at.strftime("%Y-%m-%d %H:%M") }}
+            {% else %}
+            None yet
+            {% endif %}
+          </dd>
+        </div>
+        <div>
+          <dt>Storage root</dt>
+          <dd>{{ stats.storage_root }}</dd>
+        </div>
+        <div>
+          <dt>Media root</dt>
+          <dd>{{ stats.media_root }}</dd>
+        </div>
+      </dl>
+    </article>
+  </section>
+
+  {% if stats.disk_usage %}
+  <section class="chart-card">
+    <h2>Disk Capacity</h2>
+    <div class="disk-bar">
+      <span style="width: {{ stats.disk_usage.used_percent }}%;"></span>
+    </div>
+    <div class="chart-legend">
+      <span>{{ stats.disk_usage.used_percent }}% used</span>
+      <span>{{ stats.disk_usage.free_label }} free</span>
+    </div>
+  </section>
+  {% endif %}
+</section>
+{% endblock %}

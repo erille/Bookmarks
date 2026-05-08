@@ -1,0 +1,129 @@
+{% extends "base.html" %}
+{% set title = "Labels - Bookmarks" %}
+{% block content %}
+{% if flash %}
+<p class="notice success">{{ flash }}</p>
+{% endif %}
+
+<section class="labels-page">
+  <div class="panel-heading page-heading">
+    <h1>Labels</h1>
+  </div>
+
+  <div class="labels-grid">
+    <section class="label-panel">
+      <div class="label-panel-heading">
+        <h2>Categories</h2>
+        <span>{{ categories|length }} total</span>
+      </div>
+      <form method="post" action="/admin/labels/create" class="label-create-form">
+        <input type="hidden" name="label_type" value="category">
+        <label>
+          New category
+          <input type="text" name="name" maxlength="80" placeholder="Music" required>
+        </label>
+        <button type="submit">Add</button>
+      </form>
+      <div class="label-table-wrap">
+        <table class="label-table">
+          <thead>
+            <tr>
+              <th>Name</th>
+              <th>Bookmarks</th>
+              <th>Rename</th>
+              <th>Delete</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for item in categories %}
+            <tr>
+              <td>
+                <strong>{{ item.name }}</strong>
+                <span class="table-subtext">{{ item.slug }}</span>
+              </td>
+              <td><a href="{{ item.filter_url }}">{{ item.bookmark_count }}</a></td>
+              <td>
+                <form method="post" action="/admin/labels/category/{{ item.id }}/rename" class="label-inline-form">
+                  <input type="text" name="name" value="{{ item.name }}" maxlength="80" required>
+                  <button type="submit" class="secondary-button">Rename</button>
+                </form>
+              </td>
+              <td>
+                {% if item.bookmark_count == 0 %}
+                <form method="post" action="/admin/labels/category/{{ item.id }}/delete">
+                  <button type="submit" class="danger-button compact-button">Delete</button>
+                </form>
+                {% else %}
+                <button type="button" class="secondary-button compact-button" disabled>Used</button>
+                {% endif %}
+              </td>
+            </tr>
+            {% else %}
+            <tr>
+              <td colspan="4" class="empty-cell">No categories yet.</td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <section class="label-panel">
+      <div class="label-panel-heading">
+        <h2>Tags</h2>
+        <span>{{ tags|length }} total</span>
+      </div>
+      <form method="post" action="/admin/labels/create" class="label-create-form">
+        <input type="hidden" name="label_type" value="tag">
+        <label>
+          New tag
+          <input type="text" name="name" maxlength="80" placeholder="guitar" required>
+        </label>
+        <button type="submit">Add</button>
+      </form>
+      <div class="label-table-wrap">
+        <table class="label-table">
+          <thead>
+            <tr>
+              <th>Name</th>
+              <th>Bookmarks</th>
+              <th>Rename</th>
+              <th>Delete</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for item in tags %}
+            <tr>
+              <td>
+                <strong>{{ item.name }}</strong>
+                <span class="table-subtext">{{ item.slug }}</span>
+              </td>
+              <td><a href="{{ item.filter_url }}">{{ item.bookmark_count }}</a></td>
+              <td>
+                <form method="post" action="/admin/labels/tag/{{ item.id }}/rename" class="label-inline-form">
+                  <input type="text" name="name" value="{{ item.name }}" maxlength="80" required>
+                  <button type="submit" class="secondary-button">Rename</button>
+                </form>
+              </td>
+              <td>
+                {% if item.bookmark_count == 0 %}
+                <form method="post" action="/admin/labels/tag/{{ item.id }}/delete">
+                  <button type="submit" class="danger-button compact-button">Delete</button>
+                </form>
+                {% else %}
+                <button type="button" class="secondary-button compact-button" disabled>Used</button>
+                {% endif %}
+              </td>
+            </tr>
+            {% else %}
+            <tr>
+              <td colspan="4" class="empty-cell">No tags yet.</td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </section>
+  </div>
+</section>
+{% endblock %}

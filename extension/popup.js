@@ -1,6 +1,6 @@
 "use strict";
 
-const DEFAULT_BASE_URL = "http://localhost:8010";
+const DEFAULT_BASE_URL = "http://localhost:8015";
 
 const state = {
   baseUrl: DEFAULT_BASE_URL,

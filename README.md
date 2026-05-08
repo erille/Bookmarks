@@ -2,7 +2,7 @@
 
 Bookmarks is a self-hosted, single-user bookmarking app for saving links, organizing them with categories and tags, and browsing them in a clean feed.
 
-It can save simple bookmarks, embed bookmark-only YouTube links, enrich website bookmarks with Open Graph previews or screenshots, and download media through a configured ReClip-compatible downloader service.
+It can save simple bookmarks, embed bookmark-only YouTube links, enrich website bookmarks with Open Graph previews or screenshots, and download media with an internal `yt-dlp` downloader.
 
 Built by Ketah with assistance from OpenAI Codex.
 
@@ -18,7 +18,7 @@ Built by Ketah with assistance from OpenAI Codex.
 - To Watch workflow with a `Watched` action.
 - Bookmark-only YouTube embeds.
 - Website previews from Open Graph metadata or local screenshots.
-- Optional media download through ReClip.
+- Optional media download through `yt-dlp`.
 - Local media storage under `/srv/webdata/bookmarks`.
 - JSON export/import.
 - Admin bulk edit page.
@@ -30,7 +30,7 @@ Built by Ketah with assistance from OpenAI Codex.
 
 This project is currently designed for **one trusted self-hosted user**. It is not a multi-user SaaS app.
 
-Media download support expects a ReClip-compatible service to be reachable at `RECLIP_BASE_URL`. Bookmark-only saving, public/private feeds, labels, previews, and admin features work in the Bookmarks app itself.
+Media download support is built in through `yt-dlp` and `ffmpeg`. ReClip-compatible downloads are still available as an optional fallback by setting `DOWNLOADER_BACKEND=reclip`.
 
 ## Quick Start
 
@@ -61,7 +61,7 @@ For local HTTP testing, also set:
 
 ```text
 SESSION_COOKIE_SECURE=false
-APP_BASE_URL=http://localhost:8010
+APP_BASE_URL=http://localhost:8015
 ```
 
 Generate random secrets:
@@ -94,7 +94,7 @@ docker compose up -d --build
 Open:
 
 ```text
-http://localhost:8010/login
+http://localhost:8015/login
 ```
 
 ## Storage
@@ -112,22 +112,40 @@ Expected layout:
   data/bookmarks.sqlite
   media/videos/
   media/images/
+  media/audio/
   media/thumbnails/
   media/previews/
+  media/tmp/
   logs/
 ```
 
 Create it manually if needed:
 
 ```bash
-sudo mkdir -p /srv/webdata/bookmarks/{data,media/videos,media/images,media/thumbnails,media/previews,logs}
+sudo mkdir -p /srv/webdata/bookmarks/{data,media/videos,media/images,media/audio,media/thumbnails,media/previews,media/tmp,logs}
 sudo chown -R $USER:$USER /srv/webdata/bookmarks
 chmod 750 /srv/webdata/bookmarks
 ```
 
-## ReClip
+## Downloader
 
-Set `RECLIP_BASE_URL` to your downloader service.
+By default, Bookmarks downloads media internally:
+
+```text
+DOWNLOADER_BACKEND=internal
+```
+
+The internal downloader uses `yt-dlp` and `ffmpeg`, both installed in the Docker image. The default format prefers MP4-compatible media up to 720p:
+
+```text
+YTDLP_FORMAT=bestvideo[height<=720][ext=mp4]+bestaudio[ext=m4a]/best[height<=720][ext=mp4]/best[height<=720]/best
+```
+
+To use an existing ReClip-compatible service instead:
+
+```text
+DOWNLOADER_BACKEND=reclip
+```
 
 When Bookmarks runs in Docker and ReClip runs on the Docker host:
 
@@ -141,7 +159,7 @@ When Bookmarks and ReClip run on the same host without Docker isolation:
 RECLIP_BASE_URL=http://127.0.0.1:8899
 ```
 
-Bookmark-only saves do not require ReClip. `download_media` mode does.
+Bookmark-only saves do not use the downloader.
 
 ## Browser Extension
 
@@ -159,7 +177,7 @@ To load it in Chrome or Brave:
 Default local base URL:
 
 ```text
-http://localhost:8010
+http://localhost:8015
 ```
 
 The extension manifest allows HTTP and HTTPS self-hosted URLs so it can work with custom domains. If you want stricter browser permission prompts, edit `extension/manifest.json` and restrict `host_permissions` to your own Bookmarks URL before loading it.
@@ -169,7 +187,7 @@ The extension manifest allows HTTP and HTTPS self-hosted URLs so it can work wit
 Health check:
 
 ```bash
-curl -s http://localhost:8010/health
+curl -s http://localhost:8015/health
 ```
 
 View logs:
@@ -193,7 +211,7 @@ docker exec bookmarks python -m app.cleanup --delete
 Export metadata:
 
 ```bash
-curl -s http://localhost:8010/api/export \
+curl -s http://localhost:8015/api/export \
   -H "Authorization: Bearer $BOOKMARKS_API_TOKEN" \
   -o bookmarks-export.json
 ```
@@ -201,7 +219,7 @@ curl -s http://localhost:8010/api/export \
 Import metadata:
 
 ```bash
-curl -s -X POST "http://localhost:8010/api/import?overwrite=false" \
+curl -s -X POST "http://localhost:8015/api/import?overwrite=false" \
   -H "Authorization: Bearer $BOOKMARKS_API_TOKEN" \
   -H "Content-Type: application/json" \
   --data-binary @bookmarks-export.json
@@ -226,12 +244,14 @@ The JSON export stores metadata only. It does not contain video/image/preview fi
 - SQLAlchemy
 - Jinja2
 - Vanilla JavaScript
+- yt-dlp
+- ffmpeg
 - Docker Compose
 - Chrome Manifest V3 extension
 
 ## Roadmap Ideas
 
-- Bundle the downloader/ReClip service in the default Compose stack.
+- Improve download queue/progress details.
 - DB-backed setup/bootstrap flow.
 - Admin-managed API tokens.
 - Favorite/star bookmarks.

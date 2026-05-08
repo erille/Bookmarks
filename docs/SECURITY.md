@@ -7,17 +7,16 @@ Bookmarks is a private single-user application. It still needs proper security b
 Public:
 
 ```text
-http://localhost:8010
+http://localhost:8015
 ```
 
 Private/internal:
 
 ```text
-http://127.0.0.1:8899 ReClip
 /srv/webdata/bookmarks SQLite/media storage
 ```
 
-The browser extension must call Bookmarks, not ReClip directly.
+The browser extension must call Bookmarks, not downloader backends directly.
 
 ## Authentication
 
@@ -93,7 +92,11 @@ media/
 logs/
 ```
 
-## ReClip protection
+## Downloader protection
+
+Default media downloads run inside the Bookmarks container through `yt-dlp` and `ffmpeg`.
+
+If using optional ReClip mode:
 
 Preferred:
 
@@ -105,7 +108,7 @@ Bookmarks calls ReClip through localhost or Docker host gateway
 Avoid:
 
 ```text
-Extension → public ReClip endpoint
+Extension → public downloader endpoint
 ```
 
 Reason:
@@ -117,7 +120,7 @@ Reason:
 
 ## URL validation
 
-Before calling ReClip, validate URLs.
+Before calling the downloader, validate URLs.
 
 Allow only:
 
@@ -137,7 +140,7 @@ ldap://
 
 ## SSRF protection
 
-Because the app sends URLs to ReClip and fetches bookmark-only website previews, protect against internal network abuse.
+Because the app sends URLs to the downloader and fetches bookmark-only website previews, protect against internal network abuse.
 
 Block private/internal IP targets after DNS resolution:
 
@@ -155,7 +158,7 @@ fe80::/10
 Exception:
 
 ```text
-The app itself may call ReClip at configured RECLIP_BASE_URL.
+The app itself may call ReClip at configured RECLIP_BASE_URL when DOWNLOADER_BACKEND=reclip.
 User-submitted URLs must not target internal addresses.
 ```
 
@@ -168,7 +171,7 @@ Do not use remote titles as filenames.
 Use generated names:
 
 ```text
-<bookmark_id>_<reclip_job_id>.mp4
+<bookmark_id>_<downloader_job_id>.mp4
 ```
 
 Never trust:
@@ -235,8 +238,8 @@ Log:
 login success/failure
 bookmark creation
 duplicate detection
-ReClip job_id
-ReClip errors
+Downloader job_id
+Downloader errors
 download completion
 ```
 
@@ -280,7 +283,7 @@ Cloudflare Access in front of bookmarks.example.com
 [ ] API token generated
 [ ] session secret generated
 [ ] password hash generated
-[ ] ReClip not called by extension directly
+[ ] Downloader backend not called by extension directly
 [ ] URL validation enabled
 [ ] private IP URL blocking enabled
 [ ] media path traversal protection enabled

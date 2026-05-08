@@ -18,6 +18,10 @@
     </video>
     {% elif media_url and bookmark.media_type == "image" %}
     <img class="media-image" src="{{ media_url }}" alt="{{ bookmark.title }}">
+    {% elif media_url and bookmark.media_type == "audio" %}
+    <audio class="media-audio" controls preload="metadata">
+      <source src="{{ media_url }}">
+    </audio>
     {% elif youtube_embed_url %}
     <div class="youtube-embed">
       <iframe
@@ -48,6 +52,9 @@
   <aside class="detail-sidebar">
     <div class="detail-actions">
       <button type="button" class="secondary-button share-button" data-share-url="{{ share_url }}">Share</button>
+      {% if username and media_url and bookmark.media_type in ["video", "audio"] %}
+      <a class="button-link" href="{{ media_url }}" download>Download</a>
+      {% endif %}
       <a class="button-link" href="{{ bookmark.source_url }}" target="_blank" rel="noreferrer">Open source</a>
       {% if username and not public_detail and has_category_slug(bookmark, "to-watch") %}
       <form method="post" action="/bookmarks/{{ bookmark.id }}/watched">

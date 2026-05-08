@@ -471,6 +471,14 @@ select[multiple] {
   object-fit: cover;
 }
 
+.feed-audio {
+  background: #f6fafc;
+  border: 1px solid #dce8f0;
+  border-radius: 6px;
+  padding: 0.75rem;
+  width: 100%;
+}
+
 .youtube-embed {
   aspect-ratio: 16 / 9;
   background: #0f1519;
@@ -1054,12 +1062,19 @@ select[multiple] {
 }
 
 .media-player,
-.media-image {
+.media-image,
+.media-audio {
   background: #0f1519;
   border-radius: 6px;
   max-height: 70vh;
   object-fit: contain;
   width: 100%;
+}
+
+.media-audio {
+  background: #f6fafc;
+  border: 1px solid #dce8f0;
+  padding: 1rem;
 }
 
 .media-image.website-preview {

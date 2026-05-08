@@ -3,7 +3,7 @@
 Base URL:
 
 ```text
-http://localhost:8010
+http://localhost:8015
 ```
 
 ## Auth
@@ -72,7 +72,7 @@ Readonly public bookmark detail page. Returns 404 for private bookmarks.
 Export bookmark/category/tag metadata as JSON.
 
 ```bash
-curl -s http://localhost:8010/api/export \
+curl -s http://localhost:8015/api/export \
   -H "Authorization: Bearer $BOOKMARKS_API_TOKEN" \
   -o bookmarks-export.json
 ```
@@ -90,7 +90,7 @@ Query parameters:
 | `overwrite` | If `true`, update existing bookmarks matched by normalized source URL |
 
 ```bash
-curl -s -X POST "http://localhost:8010/api/import?overwrite=false" \
+curl -s -X POST "http://localhost:8015/api/import?overwrite=false" \
   -H "Authorization: Bearer $BOOKMARKS_API_TOKEN" \
   -H "Content-Type: application/json" \
   --data-binary @bookmarks-export.json
@@ -128,7 +128,7 @@ Query parameters:
 Example:
 
 ```bash
-curl -s "http://localhost:8010/api/bookmarks?category=fitness&q=training" \
+curl -s "http://localhost:8015/api/bookmarks?category=fitness&q=training" \
   -H "Authorization: Bearer $BOOKMARKS_API_TOKEN"
 ```
 
@@ -195,7 +195,7 @@ If mode=bookmark_only:
   save metadata only
 
 If mode=download_media:
-  call ReClip and download media
+  call configured downloader and store media locally
 ```
 
 Response for existing duplicate:
@@ -373,8 +373,8 @@ Behavior:
 
 ```text
 Only allowed when status=failed
-Calls ReClip again
-Updates reclip_job_id
+Calls configured downloader again
+Updates downloader job metadata
 Sets status=downloading
 ```
 
@@ -408,9 +408,9 @@ Serve bookmark-only website preview images and screenshots.
 
 Media URLs are only served when they belong to a public bookmark or the requester has an authenticated web session.
 
-## ReClip client contract
+## Optional ReClip client contract
 
-Bookmarks calls ReClip internally.
+By default, Bookmarks downloads media with the internal `yt-dlp` backend. If `DOWNLOADER_BACKEND=reclip`, Bookmarks calls a ReClip-compatible service internally.
 
 ### POST /api/info
 
@@ -482,7 +482,7 @@ Recommended API error response:
 ```json
 {
   "error": "download_failed",
-  "message": "ReClip returned an error",
+  "message": "Downloader returned an error",
   "details": "..."
 }
 ```
@@ -500,5 +500,5 @@ Recommended API error response:
 | 409 | Duplicate/conflict |
 | 422 | Validation error |
 | 500 | Server error |
-| 502 | ReClip error |
-| 504 | ReClip timeout |
+| 502 | Downloader error |
+| 504 | Downloader timeout |

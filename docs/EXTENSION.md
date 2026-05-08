@@ -6,7 +6,7 @@ Bookmarks includes a Chrome-compatible extension using Manifest V3.
 
 Save the current page URL quickly into Bookmarks.
 
-The extension should not download media itself. It sends the URL to the Bookmarks API, and the backend calls ReClip.
+The extension should not download media itself. It sends the URL to the Bookmarks API, and the backend uses the configured downloader.
 
 ## Extension v1 features
 
@@ -83,7 +83,7 @@ public
 Fields:
 
 ```text
-Base URL: http://localhost:8010
+Base URL: http://localhost:8015
 API token: <token>
 ```
 
@@ -234,6 +234,6 @@ Saved as bookmark only.
 
 - Do not hardcode the API token in source code.
 - Do not commit personal token to Git.
-- Do not call public ReClip from the extension.
+- Do not call downloader backends from the extension.
 - Use HTTPS for API calls when the app is exposed outside localhost.
 - The packaged manifest allows arbitrary HTTP/HTTPS self-hosted base URLs. Restrict `host_permissions` to your own domain if you want a tighter installed extension.

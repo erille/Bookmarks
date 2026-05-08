@@ -10,7 +10,7 @@ Use this file to guide implementation with small, safe tasks.
 - Do not introduce React unless explicitly requested later.
 - Do not commit secrets.
 - Do not hardcode personal API tokens.
-- Keep ReClip behind the backend.
+- Keep downloader backends behind the backend.
 - Use `/srv/webdata/bookmarks` paths from environment variables.
 - Add verification commands after each major change.
 
@@ -62,7 +62,7 @@ Acceptance:
 
 ```bash
 docker compose -f deploy/docker-compose.yml up -d --build
-curl -s http://127.0.0.1:8010/health
+curl -s http://127.0.0.1:8015/health
 ```
 
 Expected:
@@ -136,7 +136,7 @@ DELETE /api/categories/{id}
 Acceptance:
 
 ```bash
-curl -s -X POST http://127.0.0.1:8010/api/categories \
+curl -s -X POST http://127.0.0.1:8015/api/categories \
   -H "Authorization: Bearer $BOOKMARKS_API_TOKEN" \
   -H "Content-Type: application/json" \
   -d '{"name":"fitness"}'
@@ -155,7 +155,7 @@ Do not protect `/health`.
 Acceptance:
 
 ```bash
-curl -i http://127.0.0.1:8010/api/categories
+curl -i http://127.0.0.1:8015/api/categories
 ```
 
 Expected:
@@ -209,7 +209,7 @@ Return existing bookmark if duplicate
 Acceptance:
 
 ```bash
-curl -s -X POST http://127.0.0.1:8010/api/bookmarks \
+curl -s -X POST http://127.0.0.1:8015/api/bookmarks \
   -H "Authorization: Bearer $BOOKMARKS_API_TOKEN" \
   -H "Content-Type: application/json" \
   -d '{
@@ -236,7 +236,7 @@ Update bookmark status=ready
 Acceptance:
 
 ```bash
-curl -s http://127.0.0.1:8010/api/bookmarks \
+curl -s http://127.0.0.1:8015/api/bookmarks \
   -H "Authorization: Bearer $BOOKMARKS_API_TOKEN" | jq
 ls -lh /srv/webdata/bookmarks/media/videos
 ```
@@ -257,7 +257,7 @@ Ensure safe path handling.
 Acceptance:
 
 ```bash
-curl -I http://127.0.0.1:8010/media/videos/<filename>
+curl -I http://127.0.0.1:8015/media/videos/<filename>
 ```
 
 Expected:
@@ -281,7 +281,7 @@ Use session cookie.
 Acceptance:
 
 ```bash
-curl -I http://127.0.0.1:8010/login
+curl -I http://127.0.0.1:8015/login
 ```
 
 ## Task 12 - Add feed UI
@@ -307,7 +307,7 @@ source link
 Acceptance:
 
 ```text
-Open http://localhost:8010 and browse saved items
+Open http://localhost:8015 and browse saved items
 ```
 
 ## Task 13 - Add save form in web UI
@@ -505,7 +505,7 @@ bookmark count
 public/private count
 status counts
 storage usage by data/media/logs
-ReClip connectivity
+Downloader status
 ```
 
 Acceptance:
@@ -513,7 +513,7 @@ Acceptance:
 ```text
 Admin can open a dedicated App Stats page
 Storage is shown with a colored chart
-ReClip connectivity is visible
+Downloader status is visible
 ```
 
 ## Task 25 - Add tags and clearer bookmark metadata

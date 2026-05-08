@@ -4,6 +4,7 @@ import re
 import shutil
 import zipfile
 from datetime import datetime, timezone
+from importlib.metadata import PackageNotFoundError, version
 from pathlib import Path
 from urllib.parse import parse_qs, quote_plus, urlencode, urlsplit
 
@@ -83,6 +84,7 @@ VISIBILITY_VALUES = {"public", "private"}
 MEDIA_DIRECTORIES = {
     "videos": "videos_dir",
     "images": "images_dir",
+    "audio": "audio_dir",
     "thumbnails": "thumbnails_dir",
     "previews": "previews_dir",
 }
@@ -90,8 +92,10 @@ MAX_IMPORT_BYTES = 10 * 1024 * 1024
 STORAGE_COLORS = {
     "Videos": "#1f6fb2",
     "Images": "#4b8fd0",
+    "Audio": "#6aa5d8",
     "Thumbnails": "#8bbbe5",
     "Previews": "#b7d7f0",
+    "Temporary": "#d4e6f5",
     "Database": "#5b6f82",
     "Logs": "#9aa9b5",
 }
@@ -1189,8 +1193,8 @@ def build_admin_status(db: Session) -> dict:
         "storage_root": str(settings.bookmarks_root),
         "database_path": str(settings.bookmarks_db_path),
         "media_root": str(settings.bookmarks_media_root),
-        "reclip_base_url": settings.reclip_base_url,
-        "reclip": check_reclip_status(settings.reclip_base_url),
+        "downloader_backend": settings.downloader_backend,
+        "downloader": check_downloader_status(settings),
         "generated_at": datetime.now(timezone.utc),
         "bookmark_total": bookmark_total,
         "category_total": category_total,
@@ -1256,8 +1260,10 @@ def storage_breakdown(settings) -> list[dict]:
     entries = [
         ("Videos", settings.videos_dir),
         ("Images", settings.images_dir),
+        ("Audio", settings.audio_dir),
         ("Thumbnails", settings.thumbnails_dir),
         ("Previews", settings.previews_dir),
+        ("Temporary", settings.tmp_dir),
         ("Database", settings.bookmarks_db_path),
         ("Logs", settings.bookmarks_log_dir),
     ]
@@ -1337,6 +1343,45 @@ def safe_disk_usage(path: Path) -> dict | None:
         "free_label": format_bytes(usage.free),
         "used_percent": percentage(used, usage.total),
         "free_percent": percentage(usage.free, usage.total),
+    }
+
+
+def check_downloader_status(settings) -> dict:
+    backend = settings.downloader_backend.strip().lower()
+    if backend == "reclip":
+        status_payload = check_reclip_status(settings.reclip_base_url)
+        status_payload["name"] = "ReClip"
+        status_payload["endpoint"] = settings.reclip_base_url
+        return status_payload
+
+    if backend in {"internal", "yt-dlp", "ytdlp"}:
+        try:
+            ytdlp_version = version("yt-dlp")
+        except PackageNotFoundError:
+            return {
+                "ok": False,
+                "name": "Internal yt-dlp",
+                "status": "Missing",
+                "detail": "yt-dlp package is not installed",
+                "endpoint": "local",
+            }
+
+        has_ffmpeg = shutil.which("ffmpeg") is not None
+        ffmpeg_status = "ffmpeg available" if has_ffmpeg else "ffmpeg missing"
+        return {
+            "ok": has_ffmpeg,
+            "name": "Internal yt-dlp",
+            "status": "Ready" if has_ffmpeg else "Limited",
+            "detail": f"yt-dlp {ytdlp_version}, {ffmpeg_status}",
+            "endpoint": "local",
+        }
+
+    return {
+        "ok": False,
+        "name": "Unknown",
+        "status": "Invalid",
+        "detail": "DOWNLOADER_BACKEND must be internal or reclip",
+        "endpoint": backend or "unset",
     }
 
 

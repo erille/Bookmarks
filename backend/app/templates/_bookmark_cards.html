@@ -12,6 +12,10 @@
   </video>
   {% elif media_url and bookmark.media_type == "image" %}
   <img class="feed-media" src="{{ media_url }}" alt="{{ bookmark.title }}" loading="lazy">
+  {% elif media_url and bookmark.media_type == "audio" %}
+  <audio class="feed-audio" controls preload="metadata">
+    <source src="{{ media_url }}">
+  </audio>
   {% elif youtube_embed_url %}
   <div class="youtube-embed">
     <iframe
@@ -31,7 +35,7 @@
       <h2><a href="{{ detail_path }}">{{ bookmark.title }}</a></h2>
       <div class="card-actions">
         <button type="button" class="source-action share-button" data-share-url="{{ share_url }}">Share</button>
-        {% if username and media_url and bookmark.media_type == "video" %}
+        {% if username and media_url and bookmark.media_type in ["video", "audio"] %}
         <a class="source-action" href="{{ media_url }}" download>Download</a>
         {% endif %}
         {% if username and not public_feed|default(false) and has_category_slug(bookmark, "to-watch") %}

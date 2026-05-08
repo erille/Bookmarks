@@ -8,7 +8,7 @@ from .config import get_settings
 from .database import SessionLocal
 from .models import Bookmark
 
-MEDIA_SUBDIR_NAMES = ("videos", "images", "thumbnails", "previews")
+MEDIA_SUBDIR_NAMES = ("videos", "images", "thumbnails", "previews", "tmp")
 
 
 def main() -> int:

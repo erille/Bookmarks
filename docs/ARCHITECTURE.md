@@ -2,7 +2,7 @@
 
 ## Overview
 
-Bookmarks is a single-user media bookmarking system with optional public sharing per bookmark. It stores bookmark metadata in SQLite and stores downloaded media files on local disk. Media extraction and downloading are delegated to an existing ReClip instance running locally.
+Bookmarks is a single-user media bookmarking system with optional public sharing per bookmark. It stores bookmark metadata in SQLite and stores downloaded media files on local disk. Media extraction and downloading are handled by the internal `yt-dlp` downloader by default, with optional ReClip-compatible fallback support.
 
 ```text
 Chrome Extension
@@ -13,7 +13,7 @@ FastAPI app
 SQLite database
 Local media storage
    ↓
-ReClip API on http://127.0.0.1:8899
+Internal yt-dlp downloader
 ```
 
 ## Components
@@ -27,7 +27,7 @@ Responsibilities:
 - Authenticate web sessions.
 - Authenticate extension API requests.
 - Manage bookmarks, categories, and media metadata.
-- Call ReClip to fetch metadata and download media.
+- Fetch metadata and download media through the configured downloader backend.
 - Serve local media files only when bookmark visibility allows it.
 
 ### 2. SQLite database
@@ -37,7 +37,7 @@ Responsibilities:
 - Store bookmarks.
 - Store categories.
 - Store bookmark/category relations.
-- Store ReClip job metadata.
+- Store downloader job metadata.
 - Store public/private visibility.
 - Store download status and errors.
 
@@ -75,9 +75,23 @@ Example:
 
 Media files are served through application routes, not a raw static mount. Public bookmark media is readable by anyone. Private bookmark media requires a logged-in web session.
 
-### 4. ReClip service
+### 4. Downloader backend
 
-ReClip is already running and reachable locally:
+Default:
+
+```text
+DOWNLOADER_BACKEND=internal
+```
+
+The internal backend uses `yt-dlp` for extraction/download and `ffmpeg` for media merging and video thumbnails.
+
+Optional ReClip-compatible backend:
+
+```text
+DOWNLOADER_BACKEND=reclip
+```
+
+When ReClip mode is enabled, ReClip should be running and reachable locally:
 
 ```text
 http://127.0.0.1:8899
@@ -107,7 +121,7 @@ Responsibilities:
 - Let user remove category selection before saving.
 - Send save request to Bookmarks API using a Bearer token.
 
-The extension must not call ReClip directly.
+The extension must not call downloader backends directly.
 
 ## Bookmark creation flow
 
@@ -115,12 +129,12 @@ The extension must not call ReClip directly.
 1. User saves URL with categories.
 2. Backend checks duplicate source_url.
 3. If duplicate exists, return existing bookmark.
-4. Backend calls ReClip /api/info.
+4. Backend fetches media metadata through the configured downloader.
 5. Backend inserts bookmark metadata.
-6. Backend calls ReClip /api/download.
-7. Backend stores reclip_job_id and status=downloading.
-8. Backend polls /api/status/<job_id>.
-9. When status=done, backend downloads /api/file/<job_id>.
+6. Backend starts media download.
+7. Backend stores downloader job metadata and status=downloading.
+8. Backend waits for the downloader to produce a media file.
+9. Backend moves the file into local managed storage.
 10. Backend stores file locally.
 11. Backend updates bookmark status=ready.
 ```
@@ -134,7 +148,7 @@ Expected behavior:
 ```text
 Same source_url detected
 → return existing bookmark
-→ do not call ReClip again
+→ do not call downloader again
 → do not download again
 ```
 
@@ -179,7 +193,7 @@ Authorization: Bearer <token>
 
 ## Deployment model
 
-Docker Compose runs the FastAPI app. ReClip remains separate and local.
+Docker Compose runs the FastAPI app with the internal downloader enabled by default.
 
 Public traffic:
 
@@ -191,7 +205,7 @@ Reverse proxy
 Bookmarks container
 ```
 
-ReClip access:
+Optional ReClip access:
 
 ```text
 Bookmarks container/host
@@ -218,6 +232,7 @@ extra_hosts:
 Then configure:
 
 ```text
+DOWNLOADER_BACKEND=reclip
 RECLIP_BASE_URL=http://host.docker.internal:8899
 ```
 
@@ -230,6 +245,7 @@ The feed should:
 - Search by text.
 - Show thumbnail/title/uploader/source.
 - Play local videos.
+- Play local audio.
 - Display local images.
 - Support infinite scroll.
 - Support muted autoplay on visible videos.

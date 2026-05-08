@@ -21,7 +21,7 @@ MAX_REDIRECTS = 5
 PREVIEW_IMAGE_EXTENSIONS = {".gif", ".jpeg", ".jpg", ".png", ".webp"}
 REQUEST_HEADERS = {
     "accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8",
-    "user-agent": "Bookmarks/1.0 (+http://localhost:8010)",
+    "user-agent": "Bookmarks/1.0 (+http://localhost:8015)",
 }
 
 

@@ -146,8 +146,8 @@ Meaning:
 | Status | Meaning |
 |---|---|
 | `pending` | Bookmark created but no work started |
-| `info_fetching` | App is calling ReClip `/api/info` |
-| `downloading` | ReClip job is active or app is downloading file |
+| `info_fetching` | App is fetching downloader metadata |
+| `downloading` | Downloader is active or app is moving the media file |
 | `ready` | Media is saved locally and playable |
 | `failed` | Download failed |
 | `bookmark_only` | URL saved without media download |
@@ -173,6 +173,7 @@ Existing bookmarks are migrated to `public`. Public bookmarks appear on the read
 ```text
 video
 image
+audio
 website
 unknown
 ```

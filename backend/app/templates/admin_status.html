@@ -32,8 +32,8 @@
       <strong>{{ stats.storage_total_label }}</strong>
     </article>
     <article class="stat-card">
-      <span>ReClip</span>
-      <strong class="{{ 'status-good' if stats.reclip.ok else 'status-bad' }}">{{ stats.reclip.status }}</strong>
+      <span>Downloader</span>
+      <strong class="{{ 'status-good' if stats.downloader.ok else 'status-bad' }}">{{ stats.downloader.status }}</strong>
     </article>
   </section>
 
@@ -103,8 +103,8 @@
           <dd>{{ stats.app_base_url }}</dd>
         </div>
         <div>
-          <dt>ReClip</dt>
-          <dd>{{ stats.reclip_base_url }} / {{ stats.reclip.detail }}</dd>
+          <dt>Downloader</dt>
+          <dd>{{ stats.downloader.name }} / {{ stats.downloader.endpoint }} / {{ stats.downloader.detail }}</dd>
         </div>
         {% if stats.disk_usage %}
         <div>

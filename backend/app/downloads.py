@@ -10,6 +10,7 @@ from urllib.parse import urlsplit
 import httpx
 from sqlalchemy.orm import selectinload
 
+from . import internal_downloader
 from . import reclip
 from .config import get_settings
 from .database import SessionLocal
@@ -20,6 +21,7 @@ logger = logging.getLogger(__name__)
 
 VIDEO_EXTENSIONS = {".avi", ".m4v", ".mkv", ".mov", ".mp4", ".webm"}
 IMAGE_EXTENSIONS = {".gif", ".jpeg", ".jpg", ".png", ".webp"}
+AUDIO_EXTENSIONS = {".aac", ".flac", ".m4a", ".mp3", ".ogg", ".opus", ".wav"}
 THUMBNAIL_EXTENSIONS = {".jpeg", ".jpg", ".png", ".webp"}
 
 
@@ -36,7 +38,8 @@ def process_bookmark_download(bookmark_id: int) -> None:
             bookmark.error_message = None
             db.commit()
 
-            info = reclip.get_info(bookmark.source_url)
+            backend = settings.downloader_backend.strip().lower()
+            info = _get_media_info(backend, bookmark.source_url)
             if bookmark.title == bookmark.source_url and info.get("title"):
                 bookmark.title = str(info["title"])
             bookmark.uploader = info.get("uploader")
@@ -49,24 +52,29 @@ def process_bookmark_download(bookmark_id: int) -> None:
             bookmark.status = "downloading"
             db.commit()
 
-            job_id = reclip.start_download(
-                bookmark.source_url,
-                format_id=settings.reclip_default_format_id,
-            )
+            if backend == "reclip":
+                job_id, original_filename, source_path = _download_with_reclip(bookmark.source_url)
+            elif backend in {"internal", "yt-dlp", "ytdlp"}:
+                downloaded = internal_downloader.download(bookmark.source_url, bookmark.id)
+                job_id = downloaded.job_id
+                original_filename = downloaded.original_filename
+                source_path = downloaded.temp_path
+            else:
+                raise ValueError("DOWNLOADER_BACKEND must be 'internal' or 'reclip'")
+
             bookmark.reclip_job_id = job_id
             db.commit()
 
-            status_payload = _wait_for_reclip_job(job_id)
-            reclip_filename = status_payload.get("filename") or f"{job_id}.mp4"
-            target_dir, media_type = _target_dir_for(reclip_filename)
-            media_filename = _safe_media_filename(bookmark.id, job_id, reclip_filename, media_type)
+            target_dir, media_type = _target_dir_for(original_filename)
+            media_filename = _safe_media_filename(bookmark.id, job_id, original_filename, media_type)
             destination = target_dir / media_filename
+            destination.parent.mkdir(parents=True, exist_ok=True)
+            source_path.replace(destination)
 
-            reclip.download_file(job_id, destination)
             if not bookmark.local_thumbnail_path and media_type == "video":
                 bookmark.local_thumbnail_path = _generate_video_thumbnail(bookmark.id, destination)
 
-            bookmark.reclip_filename = reclip_filename
+            bookmark.reclip_filename = original_filename
             bookmark.media_filename = media_filename
             bookmark.media_path = str(destination)
             bookmark.media_type = media_type
@@ -82,6 +90,27 @@ def process_bookmark_download(bookmark_id: int) -> None:
                 failed.error_message = str(exc)[:1000]
                 db.commit()
             logger.exception("bookmark %s download failed", bookmark_id)
+
+
+def _get_media_info(backend: str, url: str) -> dict:
+    if backend == "reclip":
+        return reclip.get_info(url)
+    if backend in {"internal", "yt-dlp", "ytdlp"}:
+        return internal_downloader.get_info(url)
+    raise ValueError("DOWNLOADER_BACKEND must be 'internal' or 'reclip'")
+
+
+def _download_with_reclip(url: str) -> tuple[str, str, Path]:
+    settings = get_settings()
+    job_id = reclip.start_download(
+        url,
+        format_id=settings.reclip_default_format_id,
+    )
+    status_payload = _wait_for_reclip_job(job_id)
+    original_filename = status_payload.get("filename") or f"{job_id}.mp4"
+    temp_path = settings.tmp_dir / f"{job_id}_{Path(original_filename).name}"
+    reclip.download_file(job_id, temp_path)
+    return job_id, original_filename, temp_path
 
 
 def _wait_for_reclip_job(job_id: str) -> dict:
@@ -105,6 +134,8 @@ def _target_dir_for(filename: str) -> tuple[Path, str]:
     media_type = _media_type_for(filename)
     if media_type == "image":
         return settings.images_dir, "image"
+    if media_type == "audio":
+        return settings.audio_dir, "audio"
     return settings.videos_dir, "video"
 
 
@@ -115,19 +146,28 @@ def _media_type_for(filename: str, content_type: str | None = None) -> str:
             return "image"
         if content_type.startswith("video/"):
             return "video"
+        if content_type.startswith("audio/"):
+            return "audio"
 
     extension = Path(filename).suffix.lower()
     if extension in IMAGE_EXTENSIONS:
         return "image"
     if extension in VIDEO_EXTENSIONS:
         return "video"
+    if extension in AUDIO_EXTENSIONS:
+        return "audio"
     return "unknown"
 
 
 def _safe_media_filename(bookmark_id: int, job_id: str, original_filename: str, media_type: str) -> str:
     extension = Path(original_filename).suffix.lower()
     if not re.fullmatch(r"\.[a-z0-9]{1,8}", extension or ""):
-        extension = ".jpg" if media_type == "image" else ".mp4"
+        if media_type == "image":
+            extension = ".jpg"
+        elif media_type == "audio":
+            extension = ".mp3"
+        else:
+            extension = ".mp4"
     safe_job_id = re.sub(r"[^A-Za-z0-9_.-]+", "-", job_id).strip("-") or "reclip"
     return f"{bookmark_id}_{safe_job_id}{extension}"
 

@@ -2,7 +2,7 @@
 
 ## v0.1 - Backend MVP
 
-Goal: save URL, call ReClip, store media, list bookmarks.
+Goal: save URL, call the configured downloader, store media, list bookmarks.
 
 Tasks:
 
@@ -10,7 +10,7 @@ Tasks:
 - SQLite database.
 - Bookmark model.
 - Category model.
-- ReClip client.
+- Downloader client.
 - Create bookmark API.
 - Duplicate URL detection.
 - Download media to local storage.

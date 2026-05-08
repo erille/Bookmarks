@@ -1,10 +1,21 @@
 # Bookmarks
 
+[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
+![Python 3.12](https://img.shields.io/badge/Python-3.12-blue)
+![FastAPI](https://img.shields.io/badge/FastAPI-0.115-009688)
+![SQLite](https://img.shields.io/badge/SQLite-3-0f80cc)
+![Docker Compose](https://img.shields.io/badge/Docker-Compose-2496ed)
+![yt-dlp](https://img.shields.io/badge/yt--dlp-built--in-ffcc00)
+
 Bookmarks is a self-hosted, single-user bookmarking app for saving links, organizing them with categories and tags, and browsing them in a clean feed.
 
 It can save simple bookmarks, embed bookmark-only YouTube links, enrich website bookmarks with Open Graph previews or screenshots, and download media with an internal `yt-dlp` downloader.
 
 Built by Ketah with assistance from OpenAI Codex.
+
+## Why Bookmarks?
+
+Bookmarks is for people who want a personal, self-hosted feed of things they care about: articles, videos, posts, music, tutorials, and watch-later links. It keeps the app intentionally simple: one trusted user, local SQLite storage, local media files, and a browser extension for quick saving.
 
 ## Screenshots
 
@@ -49,6 +60,13 @@ Built by Ketah with assistance from OpenAI Codex.
 This project is currently designed for **one trusted self-hosted user**. It is not a multi-user SaaS app.
 
 Media download support is built in through `yt-dlp` and `ffmpeg`. ReClip-compatible downloads are still available as an optional fallback by setting `DOWNLOADER_BACKEND=reclip`.
+
+## Project Info
+
+- [Changelog](CHANGELOG.md)
+- [Contributing](CONTRIBUTING.md)
+- [Security policy](SECURITY.md)
+- [Architecture notes](docs/ARCHITECTURE.md)
 
 ## Quick Start
 

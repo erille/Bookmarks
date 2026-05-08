@@ -7,7 +7,7 @@
 ![Docker Compose](https://img.shields.io/badge/Docker-Compose-2496ed)
 ![yt-dlp](https://img.shields.io/badge/yt--dlp-built--in-ffcc00)
 
-Bookmarks is a self-hosted, single-user bookmarking app for saving links, organizing them with categories and tags, and browsing them in a clean feed.
+Bookmarks is a self-hosted, single-user bookmarking app inspired by the classic del.icio.us bookmark service, built for saving links, organizing them with categories and tags, and browsing them in a clean feed.
 
 It can save simple bookmarks, embed bookmark-only YouTube links, enrich website bookmarks with Open Graph previews or screenshots, and download media with an internal `yt-dlp` downloader.
 

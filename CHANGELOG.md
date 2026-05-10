@@ -1,5 +1,9 @@
 # Changelog
 
+## Unreleased
+
+- Added Explorer-style bookmark manager with folder-like category/tag navigation and inline editing.
+
 ## 0.1.0 - First Public Release
 
 - Self-hosted FastAPI web app.

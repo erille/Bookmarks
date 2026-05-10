@@ -827,6 +827,264 @@ select[multiple] {
   padding: 0.2rem 0.45rem;
 }
 
+.explorer-page {
+  display: grid;
+  gap: 1rem;
+  margin-left: 50%;
+  transform: translateX(-50%);
+  width: min(1360px, calc(100vw - 3rem));
+}
+
+.explorer-search {
+  align-items: end;
+  display: grid;
+  gap: 0.75rem;
+  grid-template-columns: minmax(0, 1fr) auto auto;
+}
+
+.explorer-shell {
+  align-items: start;
+  display: grid;
+  gap: 1rem;
+  grid-template-columns: minmax(190px, 230px) minmax(300px, 1fr) minmax(300px, 380px);
+}
+
+.explorer-tree,
+.explorer-list,
+.explorer-detail {
+  background: #fff;
+  border: 1px solid #dce2e5;
+  border-radius: 8px;
+}
+
+.explorer-tree {
+  display: grid;
+  gap: 1rem;
+  max-height: calc(100vh - 170px);
+  overflow: auto;
+  padding: 0.85rem;
+  position: sticky;
+  top: 1rem;
+}
+
+.explorer-tree h2,
+.explorer-list-heading h2,
+.explorer-detail-heading h2,
+.explorer-placeholder h2 {
+  font-size: 1rem;
+  margin: 0;
+}
+
+.explorer-node-list {
+  display: grid;
+  gap: 0.35rem;
+  margin-top: 0.65rem;
+}
+
+.explorer-node-list a {
+  align-items: center;
+  border-radius: 6px;
+  color: #243139;
+  display: grid;
+  gap: 0.5rem;
+  grid-template-columns: minmax(0, 1fr) auto;
+  min-height: 34px;
+  padding: 0.35rem 0.45rem;
+  text-decoration: none;
+}
+
+.explorer-node-list a:hover,
+.explorer-node-list a.active {
+  background: #edf6ff;
+  color: #145c8f;
+}
+
+.explorer-node-list span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.explorer-node-list strong {
+  color: #60717a;
+  font-size: 0.78rem;
+}
+
+.explorer-list {
+  overflow: hidden;
+}
+
+.explorer-list-heading,
+.explorer-detail-heading {
+  align-items: center;
+  border-bottom: 1px solid #dce2e5;
+  display: flex;
+  gap: 0.75rem;
+  justify-content: space-between;
+  padding: 0.85rem;
+}
+
+.explorer-list-heading span {
+  color: #60717a;
+  font-size: 0.84rem;
+}
+
+.explorer-bookmarks {
+  display: grid;
+  max-height: calc(100vh - 225px);
+  overflow: auto;
+}
+
+.explorer-bookmark {
+  border-top: 1px solid #edf2f2;
+  color: #1d252c;
+  display: grid;
+  gap: 0.3rem;
+  padding: 0.75rem 0.85rem;
+  text-decoration: none;
+}
+
+.explorer-bookmark:first-child {
+  border-top: 0;
+}
+
+.explorer-bookmark:hover,
+.explorer-bookmark.active {
+  background: #f6fbff;
+}
+
+.explorer-bookmark span {
+  font-weight: 700;
+  line-height: 1.25;
+}
+
+.explorer-bookmark em {
+  color: #60717a;
+  font-size: 0.82rem;
+  font-style: normal;
+}
+
+.explorer-bookmark i {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.25rem;
+  font-style: normal;
+}
+
+.explorer-bookmark b {
+  background: #edf6ff;
+  border: 1px solid #c9e0f4;
+  border-radius: 999px;
+  color: #405059;
+  font-size: 0.74rem;
+  line-height: 1.2;
+  padding: 0.18rem 0.42rem;
+}
+
+.explorer-detail {
+  max-height: calc(100vh - 170px);
+  overflow: auto;
+  padding: 0 0 1rem;
+  position: sticky;
+  top: 1rem;
+}
+
+.explorer-detail-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  justify-content: flex-end;
+}
+
+.explorer-detail-actions .button-link {
+  min-height: 34px;
+  padding: 0.4rem 0.65rem;
+}
+
+.explorer-preview {
+  aspect-ratio: 16 / 9;
+  background: #edf2f2;
+  border-bottom: 1px solid #dce2e5;
+  object-fit: cover;
+  width: 100%;
+}
+
+.explorer-facts {
+  display: grid;
+  gap: 0.5rem;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  margin: 0;
+  padding: 0.85rem;
+}
+
+.explorer-facts div {
+  background: #f6fafc;
+  border: 1px solid #dce8f0;
+  border-radius: 6px;
+  padding: 0.55rem;
+}
+
+.explorer-facts dt {
+  color: #1f6fb2;
+  font-size: 0.7rem;
+  font-weight: 750;
+  text-transform: uppercase;
+}
+
+.explorer-facts dd {
+  color: #405059;
+  margin: 0.15rem 0 0;
+  overflow-wrap: anywhere;
+}
+
+.explorer-edit-form {
+  display: grid;
+  gap: 0.85rem;
+  padding: 0.85rem;
+}
+
+.explorer-checkboxes {
+  border: 1px solid #dce2e5;
+  border-radius: 6px;
+  margin: 0;
+  padding: 0.75rem;
+}
+
+.explorer-checkboxes legend {
+  color: #3b464d;
+  font-weight: 700;
+  padding: 0 0.3rem;
+}
+
+.explorer-checkbox-list {
+  display: grid;
+  gap: 0.4rem;
+  max-height: 190px;
+  overflow: auto;
+}
+
+.explorer-checkbox-list label {
+  align-items: center;
+  display: flex;
+  gap: 0.45rem;
+}
+
+.explorer-checkbox-list input {
+  min-height: auto;
+  width: auto;
+}
+
+.explorer-placeholder,
+.explorer-empty {
+  padding: 1rem;
+}
+
+.explorer-muted {
+  color: #60717a;
+  font-size: 0.86rem;
+  margin: 0;
+}
+
 .status-page {
   display: grid;
   gap: 1rem;
@@ -1124,6 +1382,8 @@ select[multiple] {
 
   .save-form,
   .edit-form,
+  .explorer-search,
+  .explorer-shell,
   .bulk-actions,
   .label-create-form,
   .label-inline-form,
@@ -1137,6 +1397,29 @@ select[multiple] {
 
   .field-full {
     grid-column: span 1;
+  }
+
+  .explorer-page {
+    margin-left: 0;
+    transform: none;
+    width: 100%;
+  }
+
+  .explorer-tree,
+  .explorer-detail,
+  .explorer-bookmarks {
+    max-height: none;
+    position: static;
+  }
+
+  .explorer-list-heading,
+  .explorer-detail-heading {
+    align-items: start;
+    display: grid;
+  }
+
+  .explorer-detail-actions {
+    justify-content: start;
   }
 
   .save-panel {

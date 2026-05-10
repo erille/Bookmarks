@@ -51,7 +51,6 @@ Bookmarks is for people who want a personal, self-hosted feed of things they car
 - Local media storage under `/srv/webdata/bookmarks`.
 - JSON export/import.
 - Admin bulk edit page.
-- Explorer-style bookmark manager with inline editing.
 - Label management page.
 - App status page with storage charts.
 - Chrome/Brave-compatible Manifest V3 extension.
